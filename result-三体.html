@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>三体 - 在线阅读直达</title>
+  <style>
+    :root {
+      --bg: #f6f6f1;
+      --card: #ffffff;
+      --text: #111111;
+      --text-secondary: #666666;
+      --text-muted: #999999;
+      --border: #e5e5e5;
+      --badge-text: #c45c26;
+      --badge-bg: #fff4e8;
+      --badge-border: #ffe4cc;
+      --item-bg: #fafafa;
+      --item-bg-hover: #f1f1f1;
+      --name-color: #333333;
+    }
+
+    /* 深色主题：跟随系统或用户手动切换 */
+    [data-theme="dark"] {
+      --bg: #14141a;
+      --card: #1c1c24;
+      --text: #ececf1;
+      --text-secondary: #a8a8b3;
+      --text-muted: #6e6e7a;
+      --border: #2c2c36;
+      --badge-text: #ffb27a;
+      --badge-bg: #2a2018;
+      --badge-border: #4a3522;
+      --item-bg: #23232c;
+      --item-bg-hover: #2c2c38;
+      --name-color: #d8d8e0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 32px 16px;
+      transition: background-color 0.35s ease, color 0.35s ease;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      background: var(--card);
+      border-radius: 4px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      padding: 36px 44px 48px;
+      transition: background-color 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .book-head {
+      display: flex;
+      gap: 28px;
+      align-items: flex-start;
+      padding-bottom: 26px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 26px;
+      transition: border-color 0.35s ease;
+    }
+
+    .cover {
+      flex-shrink: 0;
+      width: 118px;
+      height: 174px;
+      border-radius: 2px;
+      background: linear-gradient(135deg, #2a6aa0 0%, #174a78 100%);
+      box-shadow: 4px 4px 14px rgba(0,0,0,0.18);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cover::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 7px;
+      background: rgba(0,0,0,0.14);
+    }
+
+    .cover .glyph {
+      color: rgba(255,255,255,0.92);
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    .book-meta {
+      padding-top: 4px;
+    }
+
+    .book-meta h1 {
+      font-size: 25px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .book-meta .sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 2;
+    }
+
+    .book-meta .sub b {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+
+    .panel-title svg {
+      width: 18px;
+      height: 18px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .panel-title .count {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    /* 主题切换按钮 */
+    .theme-toggle {
+      margin-left: auto;
+      width: 30px;
+      height: 30px;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      background: var(--item-bg);
+      border-radius: 7px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background-color 0.2s ease, border-color 0.2s ease,
+                  color 0.2s ease, transform 0.2s ease;
+    }
+
+    .theme-toggle:hover {
+      color: var(--text);
+      transform: translateY(-1px);
+      border-color: var(--text-muted);
+    }
+
+    .theme-toggle svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .theme-toggle .icon-moon { display: none; }
+    [data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+    [data-theme="dark"] .theme-toggle .icon-moon { display: block; }
+
+    .platform-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .platform-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 6px;
+      background: var(--item-bg);
+      transition: background-color 0.2s ease, transform 0.12s ease;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: rowIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation-delay: calc(var(--index) * 60ms);
+    }
+
+    @keyframes rowIn {
+      to { opacity: 1; transform: none; }
+    }
+
+    .platform-item:hover {
+      background: var(--item-bg-hover);
+      transform: translateY(-1px);
+    }
+
+    .platform-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .platform-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      overflow: hidden;
+      flex-shrink: 0;
+      line-height: 0;
+      --brand: #888888;
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                  box-shadow 0.28s ease, filter 0.28s ease;
+    }
+
+    .platform-icon svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* logo 悬停微交互：轻微放大 + 品牌色发光 */
+    .platform-item:hover .platform-icon {
+      transform: scale(1.14);
+      filter: brightness(1.06) saturate(1.05);
+      box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--brand) 60%, transparent),
+        0 6px 18px color-mix(in srgb, var(--brand) 45%, transparent);
+    }
+
+    .platform-name {
+      font-size: 14px;
+      color: var(--name-color);
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--badge-text);
+      background: var(--badge-bg);
+      padding: 2px 8px;
+      border-radius: 3px;
+      border: 1px solid var(--badge-border);
+      white-space: nowrap;
+    }
+
+    .empty {
+      padding: 24px 14px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      background: var(--item-bg);
+      border-radius: 6px;
+    }
+
+    .footer {
+      margin-top: 28px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      transition: border-color 0.35s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .platform-item { animation: none; opacity: 1; transform: none; }
+      .platform-item:hover .platform-icon { transform: none; }
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 24px 18px 32px; }
+      .book-head { flex-direction: column; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="book-head">
+      <div class="cover"><span class="glyph">三</span></div>
+      <div class="book-meta">
+        <h1>三体</h1>
+        <div class="sub">
+          <div>作者：<b>刘慈欣</b></div>
+          <div>ISBN：<b>—</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      在线阅读
+      <span class="count">5 个平台已找到</span>
+      <button class="theme-toggle" type="button" aria-label="切换深浅色主题" title="切换深浅色主题">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+    </div>
+
+    <div class="platform-list">
+<a class="platform-item" href="https://weread.qq.com/web/bookDetail/ce032b305a9bc1ce0b0dd2a" target="_blank" rel="noopener" style="--index:0;--brand:#23ac3d"><div class="platform-left"><div class="platform-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#23ac3d"/><text x="12" y="16.6" font-size="13" font-weight="700" text-anchor="middle" fill="#fff" font-family="-apple-system,Segoe UI,sans-serif">阅</text></svg></div><span class="platform-name">微信读书</span></div><span class="badge">直达</span></a>
+<a class="platform-item" href="https://read.douban.com/reader/ebook/594929245/" target="_blank" rel="noopener" style="--index:1;--brand:#34b27e"><div class="platform-left"><div class="platform-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#34b27e"/><text x="12" y="16.6" font-size="13" font-weight="700" text-anchor="middle" fill="#fff" font-family="-apple-system,Segoe UI,sans-serif">读</text></svg></div><span class="platform-name">豆瓣阅读</span></div><span class="badge">直达</span></a>
+<a class="platform-item" href="https://www.dedao.cn/ebook/reader?id=qPKdG1m9B8MaveyJdxRzNnKYlqgVZ3kQBml0o5pL7E4m1r26kQjXDAPObGkYgJ4p" target="_blank" rel="noopener" style="--index:2;--brand:#e8661b"><div class="platform-left"><div class="platform-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#e8661b"/><text x="12" y="16.6" font-size="13" font-weight="700" text-anchor="middle" fill="#fff" font-family="-apple-system,Segoe UI,sans-serif">得</text></svg></div><span class="platform-name">得到</span></div><span class="badge">直达</span></a>
+<a class="platform-item" href="https://zh.vbh101.ru/s/%E4%B8%89%E4%BD%93" target="_blank" rel="noopener" style="--index:3;--brand:#4a90e2"><div class="platform-left"><div class="platform-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#4a90e2"/><path d="M6.6 7.2 h10.8 M17.4 7.2 L6.6 16.8 M6.6 16.8 h10.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="platform-name">Z-Library</span></div><span class="badge">镜像</span></a>
+<a class="platform-item" href="https://annas-archive.gl/search?q=%E4%B8%89%E4%BD%93" target="_blank" rel="noopener" style="--index:4;--brand:#7b68ee"><div class="platform-left"><div class="platform-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="aaGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b9b8f"/><stop offset="1" stop-color="#1c6b63"/></linearGradient></defs><rect width="24" height="24" rx="6" fill="url(#aaGrad)"/><path d="M13 4.6 C10.6 4.6 8.6 6.6 8.6 9 C8.6 10.2 8.1 11 7.4 11.6 C6.8 12 6.5 12.7 6.5 13.4 C6.5 14.3 7.2 15 8.1 15.3 C7.9 16 7.9 16.8 8.2 17.5 C8.6 18.6 9.7 19.3 10.8 19.3 H12 C13.7 19.3 15 18 15 16.3 V6.4 C15 5.3 14.2 4.6 13 4.6 Z" fill="#fff"/></svg></div><span class="platform-name">Anna's Archive</span></div></a>
+    </div>
+
+    <div class="footer">由 Douban eBook ++ 解析生成 · 直达链接仅供学习交流</div>
+  </div>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var KEY = 'dbplus-theme';
+      var saved = null;
+      try { saved = localStorage.getItem(KEY); } catch (e) {}
+      var prefersDark = window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var theme = saved || (prefersDark ? 'dark' : 'light');
+      root.setAttribute('data-theme', theme);
+
+      var btn = document.querySelector('.theme-toggle');
+      if (btn) {
+        btn.addEventListener('click', function () {
+          theme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+          root.setAttribute('data-theme', theme);
+          try { localStorage.setItem(KEY, theme); } catch (e) {}
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
